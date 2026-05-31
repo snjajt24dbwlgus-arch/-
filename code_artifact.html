@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>국어 소설 분석 인터랙티브 학습기</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome for Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;700;900&family=Sans-Serif&display=swap');
+    .serif-font {
+      font-family: 'Noto Serif KR', serif;
+    }
+  </style>
+</head>
+<body class="bg-stone-50 text-stone-800 min-h-screen flex flex-col antialiased">
+
+  <!-- 헤더 영역 -->
+  <header class="bg-stone-900 text-stone-100 py-6 px-4 shadow-md">
+    <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="flex items-center gap-3">
+        <div class="bg-amber-600 text-stone-900 p-2.5 rounded-lg text-2xl font-bold">
+          <i class="fa-solid fa-book-open"></i>
+        </div>
+        <div>
+          <h1 class="text-2xl font-bold serif-font tracking-tight">국어 소설 분석 인터랙티브</h1>
+          <p class="text-xs text-stone-400">인물·사건·배경으로 깊게 읽는 소설 입체 학습기 (중3~고1 대상)</p>
+        </div>
+      </div>
+      <div class="flex gap-2">
+        <span class="bg-stone-800 border border-stone-700 text-stone-300 text-xs px-3 py-1.5 rounded-full">
+          <i class="fa-solid fa-graduation-cap text-amber-500 mr-1"></i> 문학 감상 단원 연계
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <!-- 메인 레이아웃 -->
+  <main class="flex-grow max-w-6xl w-full mx-auto p-4 md:py-8 grid grid-cols-1 lg:grid-cols-12 gap-6">
+    
+    <!-- 왼쪽: 작품 선택 및 기본 정보 (4코어) -->
+    <section class="lg:col-span-4 flex flex-col gap-6">
+      <!-- 1. 작품 선택 셀렉터 카드 -->
+      <div class="bg-white p-5 rounded-2xl shadow-sm border border-stone-200">
+        <h2 class="text-sm font-bold text-stone-500 uppercase tracking-wider mb-3">
+          <i class="fa-solid fa-square-check text-amber-600 mr-1"></i> 분석할 소설 선택
+        </h2>
+        <div class="flex flex-col gap-2.5" id="novel-selector">
+          <!-- JS에서 동적으로 선택 버튼 생성 및 활성화 관리 -->
+        </div>
+      </div>
+
+      <!-- 2. 작품 해제 정보 카드 -->
+      <div class="bg-white p-5 rounded-2xl shadow-sm border border-stone-200 flex-grow" id="novel-summary-card">
+        <div class="border-b border-stone-100 pb-4 mb-4">
+          <span class="inline-block bg-amber-100 text-amber-900 text-xs font-semibold px-2.5 py-1 rounded-md mb-2" id="summary-genre">갈래</span>
+          <h3 class="text-2xl font-bold serif-font text-stone-900" id="summary-title">소설 제목</h3>
+          <p class="text-sm text-stone-500 mt-1" id="summary-author">작가 이름</p>
+        </div>
+        
+        <div class="space-y-4 text-sm leading-relaxed">
+          <div>
+            <h4 class="font-bold text-stone-800 flex items-center gap-1.5 mb-1 text-xs text-stone-500">
+              <span class="w-1.5 h-1.5 bg-amber-600 rounded-full"></span> 핵심 주제
+            </h4>
+            <p class="text-stone-700 bg-stone-50 p-2.5 rounded-lg border border-stone-100" id="summary-theme">주제 내용</p>
+          </div>
+          <div>
+            <h4 class="font-bold text-stone-800 flex items-center gap-1.5 mb-1 text-xs text-stone-500">
+              <span class="w-1.5 h-1.5 bg-amber-600 rounded-full"></span> 시점
+            </h4>
+            <p class="text-stone-700" id="summary-point">시점 정보</p>
+          </div>
+          <div>
+            <h4 class="font-bold text-stone-800 flex items-center gap-1.5 mb-1 text-xs text-stone-500">
+              <span class="w-1.5 h-1.5 bg-amber-600 rounded-full"></span> 의의 및 특징
+            </h4>
+            <ul class="list-disc pl-5 text-stone-600 space-y-1" id="summary-features">
+              <!-- 특징 목록 들어갈 곳 -->
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 오른쪽: 인터랙티브 분석 공간 (8코어) -->
+    <section class="lg:col-span-8 flex flex-col gap-6">
+      
+      <!-- 탭 탐색기 헤더 -->
+      <div class="bg-stone-200 p-1.5 rounded-xl flex gap-1 font-semibold text-sm">
+        <button onclick="switchTab('character')" id="tab-btn-character" class="tab-btn flex-1 py-2.5 px-3 rounded-lg text-center transition-all flex items-center justify-center gap-2 bg-white text-stone-900 shadow-sm">
+          <i class="fa-solid fa-users"></i> 인물 분석
+        </button>
+        <button onclick="switchTab('plot')" id="tab-btn-plot" class="tab-btn flex-1 py-2.5 px-3 rounded-lg text-center transition-all flex items-center justify-center gap-2 text-stone-600 hover:text-stone-900">
+          <i class="fa-solid fa-timeline"></i> 사건 흐름
+        </button>
+        <button onclick="switchTab('setting')" id="tab-btn-setting" class="tab-btn flex-1 py-2.5 px-3 rounded-lg text-center transition-all flex items-center justify-center gap-2 text-stone-600 hover:text-stone-900">
+          <i class="fa-solid fa-mountain-sun"></i> 배경·복선
+        </button>
+        <button onclick="switchTab('quiz')" id="tab-btn-quiz" class="tab-btn flex-1 py-2.5 px-3 rounded-lg text-center transition-all flex items-center justify-center gap-2 text-stone-600 hover:text-stone-900">
+          <i class="fa-solid fa-gamepad"></i> 독서 퀴즈
+        </button>
+      </div>
+
+      <!-- 탭 컨텐츠 영역 -->
+      <div class="bg-white p-6 rounded-2xl shadow-sm border border-stone-200 flex-grow min-h-[450px] flex flex-col justify-between">
+        
+        <!-- 1. 인물 분석 탭 -->
+        <div id="tab-content-character" class="tab-pane space-y-6">
+          <div>
+            <h3 class="text-lg font-bold serif-font text-stone-900 flex items-center gap-2 border-b border-stone-100 pb-2">
+              <i class="fa-solid fa-users text-amber-600"></i> 소설 속 핵심 인물 관계도
+            </h3>
+            <p class="text-xs text-stone-500 mt-1">인물을 클릭하면 인물의 성격, 심리, 갈등 양상을 정밀하게 분석할 수 있습니다.</p>
+          </div>
+
+          <!-- 인물 목록 및 관계 카드 -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="characters-container">
+            <!-- 동적 인물 카드 생성 -->
+          </div>
+
+          <!-- 관계 구조 시각화 -->
+          <div class="bg-amber-50/50 border border-amber-100 rounded-xl p-4 mt-2">
+            <h4 class="text-xs font-bold text-amber-800 uppercase tracking-wider mb-2">인물 간 갈등 구조 분석</h4>
+            <p class="text-sm text-stone-700 leading-relaxed" id="conflict-description">
+              갈등 구조 설명
+            </p>
+          </div>
+        </div>
+
+        <!-- 2. 사건 흐름 탭 -->
+        <div id="tab-content-plot" class="tab-pane hidden space-y-6">
+          <div>
+            <h3 class="text-lg font-bold serif-font text-stone-900 flex items-center gap-2 border-b border-stone-100 pb-2">
+              <i class="fa-solid fa-timeline text-amber-600"></i> 소설 구성 5단계 (Plot Flow)
+            </h3>
+            <p class="text-xs text-stone-500 mt-1">사건의 인과적 구성 단계를 클릭하여 핵심 줄거리와 사건 전개의 전율을 느껴보세요.</p>
+          </div>
+
+          <!-- 5단계 흐름 바 -->
+          <div class="grid grid-cols-5 gap-1 md:gap-2 text-center text-xs font-bold" id="plot-steps-nav">
+            <button onclick="selectPlotStep(0)" id="plot-nav-0" class="py-2 px-1 rounded-lg border bg-amber-600 text-white border-amber-600 font-bold">발단</button>
+            <button onclick="selectPlotStep(1)" id="plot-nav-1" class="py-2 px-1 rounded-lg border bg-stone-50 text-stone-600 border-stone-200 hover:bg-stone-100">전개</button>
+            <button onclick="selectPlotStep(2)" id="plot-nav-2" class="py-2 px-1 rounded-lg border bg-stone-50 text-stone-600 border-stone-200 hover:bg-stone-100">위기</button>
+            <button onclick="selectPlotStep(3)" id="plot-nav-3" class="py-2 px-1 rounded-lg border bg-stone-50 text-stone-600 border-stone-200 hover:bg-stone-100">절정</button>
+            <button onclick="selectPlotStep(4)" id="plot-nav-4" class="py-2 px-1 rounded-lg border bg-stone-50 text-stone-600 border-stone-200 hover:bg-stone-100">결말</button>
+          </div>
+
+          <!-- 선택된 플롯 설명 카드 -->
+          <div class="bg-stone-50 border border-stone-200 rounded-xl p-5 space-y-3 min-h-[160px] flex flex-col justify-center">
+            <div class="flex items-center gap-2">
+              <span id="plot-detail-badge" class="bg-amber-600 text-white text-xs px-2.5 py-0.5 rounded-full font-bold">발단</span>
+              <h4 id="plot-detail-title" class="font-bold text-stone-900 serif-font text-base">플롯 사건명</h4>
+            </div>
+            <p id="plot-detail-desc" class="text-sm text-stone-700 leading-relaxed">
+              사건 전개 내용 설명
+            </p>
+          </div>
+
+          <!-- 소설 구성적 재미요소 -->
+          <div class="bg-amber-50/50 border border-amber-100 rounded-xl p-4">
+            <h4 class="text-xs font-bold text-amber-800 uppercase tracking-wider mb-2"><i class="fa-solid fa-lightbulb"></i> 이 소설의 구성상 특징</h4>
+            <p class="text-sm text-stone-700 leading-relaxed" id="plot-feature-desc">
+              소설 구성 특이점 (예: 액자식 구성, 역순행적 구성 등)
+            </p>
+          </div>
+        </div>
+
+        <!-- 3. 배경 및 복선 탭 -->
+        <div id="tab-content-setting" class="tab-pane hidden space-y-6">
+          <div>
+            <h3 class="text-lg font-bold serif-font text-stone-900 flex items-center gap-2 border-b border-stone-100 pb-2">
+              <i class="fa-solid fa-mountain-sun text-amber-600"></i> 시·공간적 배경과 상징물 & 복선
+            </h3>
+            <p class="text-xs text-stone-500 mt-1">소설의 배경은 단순히 물리적 장소가 아니라 인물의 성격, 분위기, 사건 전개를 예시하는 중요한 장치입니다.</p>
+          </div>
+
+          <!-- 배경 상징성 카드 -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="border border-stone-200 rounded-xl p-4 space-y-2">
+              <span class="text-xs font-bold text-stone-400 uppercase tracking-wider block"><i class="fa-solid fa-clock mr-1"></i> 시간적 배경</span>
+              <h4 class="font-bold text-stone-800 serif-font" id="setting-time-title">시간적 배경</h4>
+              <p class="text-sm text-stone-600 leading-relaxed" id="setting-time-desc">상세 설명</p>
+            </div>
+            <div class="border border-stone-200 rounded-xl p-4 space-y-2">
+              <span class="text-xs font-bold text-stone-400 uppercase tracking-wider block"><i class="fa-solid fa-map-location-dot mr-1"></i> 공간적 배경</span>
+              <h4 class="font-bold text-stone-800 serif-font" id="setting-space-title">공간적 배경</h4>
+              <p class="text-sm text-stone-600 leading-relaxed" id="setting-space-desc">상세 설명</p>
+            </div>
+          </div>
+
+          <!-- 상징물과 복선 리스트 -->
+          <div class="bg-stone-900 text-stone-100 rounded-xl p-5 space-y-3">
+            <h4 class="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1">
+              <i class="fa-solid fa-key"></i> 소설 속 복선(Foreshadowing)과 상징물
+            </h4>
+            <div class="divide-y divide-stone-800" id="setting-foreshadows-list">
+              <!-- 복선 리스트 루프 데이터 -->
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. 독서 퀴즈 탭 -->
+        <div id="tab-content-quiz" class="tab-pane hidden space-y-6 flex-grow flex flex-col justify-between">
+          <div class="space-y-1">
+            <h3 class="text-lg font-bold serif-font text-stone-900 flex items-center gap-2 border-b border-stone-100 pb-2">
+              <i class="fa-solid fa-gamepad text-amber-600"></i> 독서 골든벨 미니 퀴즈
+            </h3>
+            <p class="text-xs text-stone-500">소설 분석을 토대로 문제를 맞혀 보세요!</p>
+          </div>
+
+          <!-- 퀴즈 플레이 컨테이너 -->
+          <div class="bg-stone-50 border border-stone-200 rounded-xl p-5 my-4 flex-grow flex flex-col justify-center" id="quiz-box">
+            <!-- 퀴즈 콘텐츠 동적 탑재 -->
+          </div>
+
+          <div class="flex justify-between items-center text-xs text-stone-500">
+            <span id="quiz-progress-text">문제 1 / 10</span>
+            <span id="quiz-score-text">점수: 0점</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 나만의 소설 분석장 (피드백 및 기록 보관) -->
+      <div class="bg-stone-900 text-stone-100 p-6 rounded-2xl shadow-md border border-stone-800">
+        <h3 class="text-base font-bold serif-font text-amber-400 flex items-center gap-2 mb-2">
+          <i class="fa-solid fa-pen-fancy"></i> 나만의 독서 분석 포트폴리오 작성하기
+        </h3>
+        <p class="text-xs text-stone-400 mb-4">현재 공부 중인 소설에 대한 학생 본인만의 감상평과 주제를 적어 보관할 수 있습니다.</p>
+        
+        <div class="space-y-3">
+          <div>
+            <label class="block text-xs text-stone-400 font-bold mb-1">가장 기억에 남는 장면이나 인물</label>
+            <input type="text" id="user-best-scene" placeholder="예: 소나기가 내릴 때 소년이 소녀를 업고 도랑을 건너는 장면" class="w-full bg-stone-800 border border-stone-700 rounded-lg py-2 px-3 text-sm text-stone-100 placeholder-stone-600 focus:outline-none focus:border-amber-500">
+          </div>
+          <div>
+            <label class="block text-xs text-stone-400 font-bold mb-1">소설을 읽고 새롭게 깨달은 삶의 가치 (한 줄 감상)</label>
+            <textarea id="user-insight" rows="2" placeholder="예: 순수한 사랑은 짧고 아프지만 평생 기억에 남는 영원함을 지닌다." class="w-full bg-stone-800 border border-stone-700 rounded-lg py-2 px-3 text-sm text-stone-100 placeholder-stone-600 focus:outline-none focus:border-amber-500 resize-none"></textarea>
+          </div>
+          <div class="flex justify-between items-center pt-2">
+            <span id="saved-toast-msg" class="text-xs text-amber-500 opacity-0 transition-opacity font-bold">포트폴리오가 클립보드에 안전하게 복사되었습니다!</span>
+            <button onclick="exportPortfolio()" class="bg-amber-500 hover:bg-amber-600 text-stone-900 font-bold py-2 px-4 rounded-lg text-xs transition-colors flex items-center gap-1.5">
+              <i class="fa-solid fa-share-nodes"></i> 분석 리포트 복사하기
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- 푸터 -->
+  <footer class="bg-stone-100 border-t border-stone-200 py-6 text-center text-xs text-stone-500 mt-12">
+    <p>© 2026 국어과 소설 분석 인터랙티브 에듀툴. 교육용 목적으로 누구나 자유롭게 편집 및 배포 가능합니다.</p>
+  </footer>
+
+  <!-- 데이터 및 비즈니스 로직 스크립트 -->
+  <script>
+    // 1. 소설 데이터베이스 (각 소설당 퀴즈 10개 탑재)
+    const NOVEL_DATA = {
+      sonagi: {
+        id: "sonagi",
+        title: "소나기",
+        author: "황순원",
+        genre: "단편 소설, 서정 소설",
+        theme: "소년과 소녀의 순수하고 안타까운 사랑과 이별",
+        point: "3인칭 전지적 작가 시점 (소년의 내면에 중심을 두고 서술하여 제한적 전지적 시점의 효과를 냄)",
+        features: [
+          "한 편의 수채화처럼 맑고 서정적인 문체",
+          "보라색, 소나기 등 선명한 상징적 색채와 배경 활용",
+          "대화를 최대한 생략하고 감각적 묘사 위주로 정조 형성"
+        ],
+        characters: [
+          {
+            name: "소년",
+            role: "주인공",
+            desc: "시골에 살며 수줍음이 많고 순박하다. 개울가에서 처음 본 소녀를 은근히 그리워하며 마음을 쏟는다. 소극적이지만 위기 상황에서 소녀를 지키기 위해 헌신하는 진정성을 보여준다."
+          },
+          {
+            name: "소녀",
+            role: "윤 초시의 증손녀",
+            desc: "서울에서 이사 온 병약하고 감수성 어린 소녀. 적극적으로 소년에게 조약돌을 던지며 다가가 놀이를 권한다. 소나기를 맞고 병이 악화되어 세상을 떠나며 자신의 상징인 분홍 스웨터를 입혀 달라고 유언을 남긴다."
+          }
+        ],
+        conflict: "인물 간의 반목이나 외적 갈등보다는, '소년·소녀의 순수한 교감'과 이들을 이별하게 만드는 '죽음과 질병(자연적 운명)' 간의 갈등(운명적 갈등)이 핵심입니다.",
+        plot: [
+          { step: "발단", title: "개울가에서의 마주침", desc: "소년과 소녀는 시골 개울가에서 마주치지만, 서로 수줍어 쉽게 말을 건네지 못한다." },
+          { step: "전개", title: "개울에서의 물장난과 만남", desc: "소녀가 징검다리에서 길을 막고 비켜주지 않거나 돌을 던지는 등 장난을 치며 가까워진다." },
+          { step: "위기", title: "산 너머 뒷산으로의 가을 나들이", desc: "단풍을 구경하기 위해 뒷산으로 함께 나들이를 갔다가 갑작스러운 소나기를 만난다. 소년은 수수단 속으로 소녀를 보호한다." },
+          { step: "절정", title: "소녀의 발병과 만남의 단절", desc: "소나기를 맞은 후 소녀의 병이 깊어져 개울가에 나타나지 못하다가 잠깐 만나 도라지꽃처럼 푸른 얼굴로 소년에게 이사 소식을 전한다." },
+          { step: "결말", title: "소녀의 죽음 소식", desc: "마을 어른들의 대화를 통해 소년은 소녀가 세상을 떠났으며, 죽을 때 입었던 옷을 그대로 입힌 채 묻어달라고 한 슬픈 유언을 전해 듣는다." }
+        ],
+        plotFeature: "사건의 급박한 전개보다는 시각적·시간적 흐름(수줍은 만남 → 친밀함의 깊어짐 → 비극적 운명)에 따른 극적 긴장과 서정적 아픔을 증폭하는 순차적 구성입니다.",
+        setting: {
+          time: { title: "늦여름에서 맑고 시린 가을", desc: "소년과 소녀의 사랑의 시작인 푸르른 늦여름에서 죽음과 조락을 예견하는 가을로 계절이 이동하며 소설의 비극성을 심화합니다." },
+          space: { title: "시골 마을 개울가와 수수밭", desc: "외부의 간섭이나 복잡함이 배제된 순수한 대자연의 공간으로, 소년·소녀의 때 묻지 않은 동심과 원초적 감성을 대변합니다." },
+          foreshadows: [
+            { item: "보라색", desc: "소녀가 보라색 꽃을 좋아한다는 언급은 보라색이 주는 슬픔과 상조(조문)적 색채를 띠며 소녀의 슬픈 죽음을 강하게 암시합니다." },
+            { item: "갑작스러운 소나기", desc: "둘의 관계가 매우 일시적이며, 소나기처럼 찬란하게 스쳐 지나가고 영원히 사라져 버릴 덧없는 운명임을 예시합니다." },
+            { item: "소녀 스웨터의 물든 진흙", desc: "소 소나기 속에서 소년의 등에 업혔을 때 묻은 얼룩은 죽어서도 소년과의 추억을 그대로 품고 가겠다는 결심으로 이어집니다." }
+          ]
+        },
+        quizzes: [
+          { q: "소녀의 죽음을 상징적으로 보여주며, 소설 초반에 소녀가 좋아하는 색으로 나타나는 색깔은 무엇일까요?", a: ["보라색", "분홍색", "파란색", "노란색"], ai: 0 },
+          { q: "소년과 소녀가 나들이를 갔다가 세찬 비를 만나 몸을 숨긴 곳은 어디일까요?", a: ["기와집", "초가집 원두막", "수수단 속", "동굴"], ai: 2 },
+          { q: "소녀가 소년과 헤어지기 전, 소년에게 선물했던 가을꽃의 이름은 무엇일까요?", a: ["코스모스", "도라지꽃", "국화", "민들레"], ai: 1 },
+          { q: "개울가에서 소녀가 소년의 관심을 끌기 위해 처음으로 던진 도구(물건)는 무엇일까요?", a: ["꽃송이", "나뭇가지", "조약돌", "흙덩이"], ai: 2 },
+          { q: "소나기가 내릴 때 개울물이 불어나자 소년이 소녀를 건네주기 위해 취한 행동은 무엇일까요?", a: ["손을 잡고 건넜다", "등에 업고 건넜다", "뗏목을 태웠다", "소녀를 안고 건넜다"], ai: 1 },
+          { q: "소녀의 증조할아버지인 '윤 초시' 댁의 현재 가세는 어떠한 상태인가요?", a: ["서울에서 온 대부호이다", "마을의 땅을 모두 산 지주이다", "가세가 점점 기울어가고 있다", "새로운 사업으로 번창하고 있다"], ai: 2 },
+          { q: "소년과 소녀가 산 너머로 놀러 갔을 때 따 먹었으나 맛이 시어 뱉어버린 열매는 무엇일까요?", a: ["다래", "머루", "송이", "대추"], ai: 1 },
+          { q: "소년이 소녀에게 주려고 주머니에 소중히 넣어두었다가 결국 주지 못한 신작로 인근 가을 열매는 무엇일까요?", a: ["밤", "도토리", "대추", "감"], ai: 2 },
+          { q: "소녀가 세상을 떠나기 전 어른들에게 남긴 마지막 유언의 내용은 무엇일까요?", a: ["소년에게 분홍 스웨터를 전해달라", "자신이 입던 옷을 그대로 입혀 묻어달라", "소년과 함께 놀던 개울가에 뿌려달라", "보라색 도라지꽃을 무덤에 심어달라"], ai: 1 },
+          { q: "소나기가 그친 직후 하늘에 나타나 소년과 소녀의 짧고 찬란한 만남을 시각적으로 강조해준 자연현상은 무엇일까요?", a: ["무지개", "저녁노을", "보름달", "안개"], ai: 0 }
+        ]
+      },
+      bombomb: {
+        id: "bombomb",
+        title: "봄·봄",
+        author: "김유정",
+        genre: "단편 소설, 해학 소설, 농촌 소설",
+        theme: "농촌의 가혹한 마름과 데릴사위 후보 간의 해학적인 갈등",
+        point: "1인칭 주인공 시점 (어수룩하고 눈치 없는 서술자 '나'를 세워 해학성과 풍자성을 높임)",
+        features: [
+          "비속어, 구어체, 사투리를 적극적으로 활용하여 토속적 정서 발현",
+          "가진 자(장인)와 지배당하는 자(나)의 갈등을 유쾌하고 해학적인 격투로 승화",
+          "갈등의 최고조(점순이 아버지와 나의 격투)에서 끝을 맺으며 끝없는 도돌이표식 결말 형성"
+        ],
+        characters: [
+          {
+            name: "나",
+            role: "데릴사위 머슴",
+            desc: "순박하지만 세상 물정 모르고 어수룩하다. 점순이와 혼인시켜준다는 장인의 거짓 꾐에 넘어가 3년 7개월 동안 돈 한 푼 못 받고 무일푼 머슴살이를 마다치 않는 고지식한 인물이다."
+          },
+          {
+            name: "봉필 (장인)",
+            role: "교활한 마름",
+            desc: "동네에서 욕심 많기로 유명한 마름이자 욕쟁이. 딸 점순이의 키가 자라지 않는다는 핑계로 일꾼인 '나'를 내쫓거나 새장가를 보내지 않고 계속 부려 먹는 노회한 탐욕가다."
+          }
+        ],
+        conflict: "무임금으로 노동력을 취하려는 장인 '봉필'과, 하루빨리 혼인하여 가정을 꾸리고자 하는 머슴 '나' 사이의 생계형·계층적 갈등입니다. 그러나 '나'의 어수룩함 때문에 해학적으로 그려집니다.",
+        plot: [
+          { step: "발단", title: "끝나지 않는 데릴사위 생활", desc: "나는 점순이와 혼인하는 대가로 3년 7개월째 새경 한 푼 안 받고 머슴일을 하고 있지만, 장인은 여전히 점순이 키 타령을 하며 혼인을 미룬다." },
+          { step: "전개", title: "점순이의 부추김และ 성례 요구", desc: "어느 날 점순이가 물을 길러 오다가 '바보'라고 부르며 자신을 주동적으로 데려가 달라고 부추기자, 용기를 얻어 장인에게 성례를 강력히 요구한다." },
+          { step: "위기", title: "구장 앞에서 행해진 담판과 설득", desc: "중재를 요청하러 구장을 찾아가지만, 장인과 긴밀히 연결된 구장은 장인의 편을 들며 대충 넘어가라고 타이를 뿐이다. 일터인 밭으로 돌아와 파업을 개시한다." },
+          { step: "절정", title: "장인과 사위의 밭두렁 진흙탕 난투극", desc: "화가 난 장인이 내 가랑이를 잡고 늘어지고, 나 또한 장인의 수염을 낚아채며 격렬하게 싸운다. 이때 점순이가 장인 편을 들며 내 뒤통수를 치는 대반전이 일어난다." },
+          { step: "결말", title: "도로 아미타불, 다시 반복되는 일상", desc: "나는 점순이마저 아버지 편을 들자 얼이 빠진다. 장인은 다친 내 상처를 지독하게 치료해 주며 내일부터 밭 갈러 가자고 말하고, 나는 다시 일하는 순환으로 돌아간다." }
+        ],
+        plotFeature: "시간적 순서대로 구성하지 않고 현재의 밭두렁 갈등 상황에서 과거의 사건들이 액자식, 혹은 불쑥 환기되는 역순행적 삽입 구조를 사용하여 독자의 흥미를 자아냅니다.",
+        setting: {
+          time: { title: "봄바람이 부는 따스한 봄날", desc: "만물이 생동하고 이성에 대한 성적 에너지가 싹트는 계절적 배경은 총각인 '나'와 처녀인 '점순'이 혼인에 더욱 조바심 내게 만드는 심리적 기폭제 역할을 합니다." },
+          space: { title: "강원도 산골 마을과 일터 (밭)", desc: "도시와 동떨어진 토속적 농촌 환경을 기반으로 하여, 지주-마름-소작인 간의 지배구조가 아주 원색적으로 노출되는 폐쇄적 삶의 현장입니다." },
+          foreshadows: [
+            { item: "점순이의 '바보' 타령", desc: "순종적이고 어린 아이 같던 점순이가 오히려 나를 부추기는 발칙한 성격을 지녔으며, 나중에 집안 기둥인 아버지의 편을 들어 배신할 것을 암시하는 다층적 복선입니다." },
+            { item: "가랑이 움켜쥐기", desc: "생과 사를 가르는 우스꽝스럽고 원초적인 신체 부위 움켜쥐기 전투는 이 갈등이 사상적이거나 무거운 것이 아닌, 원시적이고 원초적인 생존 욕구의 해학적 충돌임을 대변합니다." }
+          ]
+        },
+        quizzes: [
+          { q: "장인이 주인공 '나'에게 점순이와 혼례를 시켜주지 않으면서 대는 핑계는 무엇일까요?", a: ["나이가 어려서", "점순이 키가 아직 안 자라서", "결혼 자금이 없어서", "농사 기술이 부족해서"], ai: 1 },
+          { q: "이 소설에서 주인공 '나'가 장인에게 노동력을 착취당하며 지낸 데릴사위 기간은 총 얼마일까요?", a: ["1년", "2년 5개월", "3년 7개월", "5년"], ai: 2 },
+          { q: "이 소설의 최고조 갈등 부분(절정)에서 장인과 내가 격하게 싸울 때, 점순이는 누구의 편을 들었을까요?", a: ["나 (주인공)", "장인 (아버지)", "구장 (마을 대표)", "아무 편도 안 들었다"], ai: 1 },
+          { q: "마을 사람들이 탐욕스럽고 심술궂게 구는 장인 '봉필'을 일컫는 고유한 별명은 무엇인가요?", a: ["욕필이", "돌필이", "쇠필이", "참필이"], ai: 0 },
+          { q: "주인공 '나'가 억울함을 호소하고 장인을 타이르게 하려고 찾아간 마을의 행정 대표는 누구인가요?", a: ["지주", "구장", "이장", "순경"], ai: 1 },
+          { q: "점순이가 물을 길러 오다가 '나'에게 '바보'라고 핀잔을 준 궁극적인 속마음은 무엇일까요?", a: ["내가 너무 게을러서", "내가 적극적으로 혼례를 요구하지 않아서", "내가 아버지를 때려서", "내가 정말 멍청해서"], ai: 1 },
+          { q: "이 소설의 전반적인 서술 시점은 무엇일까요?", a: ["1인칭 주인공 시점", "1인칭 관찰자 시점", "3인칭 관찰자 시점", "전지적 작가 시점"], ai: 0 },
+          { q: "소설의 마지막 절정 격투 장면에서 장인이 내 몸의 기를 죽이기 위해 움켜쥔 원초적인 신체 부위는 어디인가요?", a: ["수염", "머리통", "가랑이", "손가락"], ai: 2 },
+          { q: "싸움이 끝난 후 장인이 다친 나의 상처를 정성껏 치료해 주며 내뱉은 첫 대사는 무엇과 관련되어 있나요?", a: ["내일 당장 성례를 올리자", "내일부터 다시 밭을 갈러 가자", "우리 집에서 영원히 나가라", "새 사위를 얻어야겠다"], ai: 1 },
+          { q: "이 소설의 시간적 서사 구조의 가장 큰 특징은 무엇인가요?", a: ["시간 순서대로 흘러가는 순행적 구성", "현재 갈등 속에서 과거 이야기가 불쑥 삽입되는 역순행적 구성", "여러 사람의 시점이 교차하는 옴니버스 구성", "사건이 전개되지 않고 묘사만 반복되는 평면적 구성"], ai: 1 }
+        ]
+      },
+      buckwheat: {
+        id: "buckwheat",
+        title: "메밀꽃 필 무렵",
+        author: "이효석",
+        genre: "단편 소설, 서정 소설",
+        theme: "떠돌이 장돌뱅이의 애달픈 삶과 혈육의 정",
+        point: "3인칭 전지적 작가 시점 (인물들의 오랜 추억과 내면의 서정성을 전지적으로 관찰하여 서술)",
+        features: [
+          "한 폭의 산수화나 시를 읽는 것 같은 극도의 아름답고 회화적인 문체",
+          "메밀꽃이 흐드러진 달밤을 시각적·청각적·후각적으로 완벽히 조화시킴",
+          "동대와 왼손잡이라는 간접적 복선 장치로 핏줄(부자 관계)을 확인하는 서사적 묘미"
+        ],
+        characters: [
+          {
+            name: "허 생원",
+            role: "나이 든 장돌뱅이",
+            desc: "얼굴이 얽고 왼손잡이인 외로운 노장돌뱅이. 평생 여자와 인연이 없었으나, 젊은 시절 봉평 물레방앗간에서 성 서방네 처녀와 나눈 단 하룻밤의 사랑을 삶의 유일한 버팀목이자 아름다운 추억으로 안고 살아간다."
+          },
+          {
+            name: "동이",
+            role: "젊은 장돌뱅이",
+            desc: "건장하고 싹싹한 청년 장돌뱅이. 어머니를 극진히 모시는 효자이며, 허 생원처럼 '왼손잡이'라는 신체적 특징과 어머니의 고향(봉평)을 통해 허 생원의 친아들임을 점진적으로 시사해 주는 인물이다."
+          }
+        ],
+        conflict: "인물 간의 증오나 대립적 갈등보다는, 떠돌 수밖에 없는 방랑의 숙명(장돌뱅이)과 정착하여 정을 나누고 싶은 혈육에 대한 근원적인 그리움 간의 내적 대조가 주요 흐름을 형성합니다.",
+        plot: [
+          { step: "발단", title: "봉평 장날과 충주집에서의 다툼", desc: "허 생원은 충주집에서 젊은 장돌뱅이 동이가 어린 작부와 농거리를 하는 것을 보고 질책하여 쫓아버리나, 동이는 화내지 않고 나귀가 발광한다는 소식을 전해주며 그를 돕는다." },
+          { step: "전개", title: "대화장으로 가는 달밤의 메밀밭 길", desc: "허 생원, 조선달, 동이는 다음 장판인 대화로 가기 위해 한밤중에 메밀꽃이 하얗게 핀 달빛 비치는 산길을 동행한다." },
+          { step: "위기", title: "물레방앗간 옛 추억의 환기", desc: "메밀꽃 향기가 진동하는 달밤에 취해 허 생원은 평생의 유일한 정조인 봉평 물레방앗간에서 마주쳤던 성 서방네 처녀와의 단 하룻밤 기억을 다시금 늘어놓는다." },
+          { step: "절정", title: "개울을 건널 때 알게 된 동이의 사연", desc: "개울을 건너다 발이 미끄러진 허 생원을 동이가 등에 업어준다. 동이 어머니의 성씨(성 서방네)와 가혹했던 과거사를 들으며 허 생원의 심장이 격렬하게 뛰기 시작한다." },
+          { step: "결말", title: "동이가 왼손잡이임을 목격함", desc: "개울을 다 건너고 동이가 채찍을 쥔 모습을 보았을 때, 동이 역시 자신과 똑같은 '왼손잡이'임을 발견하고 강한 혈육의 이끌림과 내일 제천 장으로 갈 것을 기쁜 마음으로 결심한다." }
+        ],
+        plotFeature: "봉평에서 대화로 이어지는 산길의 '이동(旅路)' 자체가 시간의 흐름과 공간의 이동이자, 허 생원 인생의 추억 속으로 걸어 들어가는 이중적 여로형 구성입니다.",
+        setting: {
+          time: { title: "새하얗게 메밀꽃이 핀 한여름 달밤", desc: "'소금을 뿌려 놓은 듯이 숨이 막힐 지경'의 하얀 메밀밭과 숨 가쁜 밤길은 허 생원의 과거 사랑을 현실로 불러내 부자 상봉의 비현실적 신비감을 극대화하는 촉매제입니다." },
+          space: { title: "강원도 평창 봉평에서 대화로 가는 밤길", desc: "시골 장터를 이어주는 끝없는 오솔길은 장돌뱅이들의 끝없는 유랑의 고단함과, 그 고단함을 감싸 안아주는 몽환적인 자연의 자궁과도 같은 모성을 내포합니다." },
+          foreshadows: [
+            { item: "왼손잡이", desc: "허 생원과 동이 둘 다 선천적으로 극히 드문 왼손잡이라는 우연의 신체적 특성은 어떤 과학적 유전자 검사보다 확실하게 둘이 친부자 사이임을 암시하는 천륜의 끈입니다." },
+            { item: "늙은 나귀", desc: "허 생원과 20년 동안 고락을 함께한 늙은 나귀는 암나귀를 보고 우는 생리적 특성을 보여주며, 외롭게 방랑하지만 가슴 속에 야성적인 사랑의 씨앗을 품고 사는 허 생원 그 자체의 상징입니다." }
+          ]
+        },
+        quizzes: [
+          { q: "허 생원이 평생 가슴에 안고 사는, 봉평 물레방앗간에서 만난 처녀의 집안 성씨는 무엇일까요?", a: ["성 서방네", "이 서방네", "최 서방네", "김 서방네"], ai: 0 },
+          { q: "허 생원과 동이가 피가 섞인 친부자 관계임을 독자에게 결정적으로 확신하게 만드는 신체적 공통점은 무엇일까요?", a: ["키가 작다", "왼손잡이이다", "목소리가 우렁차다", "얼굴이 얽어 있다"], ai: 1 },
+          { q: "이 소설의 몽환적이고 시적인 분위기를 형성하는 배경 꽃은 무엇일까요?", a: ["벚꽃", "민들레꽃", "도라지꽃", "메밀꽃"], ai: 3 },
+          { q: "이 소설의 주인공들의 공통된 직업(신분)은 무엇인가요?", a: ["소작농", "장돌뱅이(보부상)", "마름", "관청 서리"], ai: 1 },
+          { q: "허 생원과 평생의 고락을 함께했으며, 허 생원의 외롭고 쓸쓸한 처지를 형상화한 동물의 종류는 무엇인가요?", a: ["늙은 개", "나귀", "황소", "말"], ai: 1 },
+          { q: "이 소설의 공간적 배경이자 허 생원이 일생에 유일한 사랑을 나누었던 사랑의 시발점은 어디인가요?", a: ["봉평", "충주", "제천", "대화"], ai: 0 },
+          { q: "허 생원이 충주집에서 동이에게 질투 섞인 역정을 내며 쫓아낸 진짜 내면적 이유는 무엇인가요?", a: ["동이가 물건을 훔쳐서", "동이가 자기보다 젊고 인기가 많아서", "동이가 젊은 작부와 농거리를 나누는 것이 서글프고 부러워서", "동이가 예의 없게 욕을 해서"], ai: 2 },
+          { q: "동이가 장터에서 허 생원에게 달려와 '나귀가 발광했다'며 소식을 전해준 사건의 원인은 무엇인가요?", a: ["동이가 나귀를 때려서", "동네 아이들이 나귀를 괴롭혀서", "나귀가 더위를 먹어서", "나귀가 늑대를 만나서"], ai: 1 },
+          { q: "허 생원이 밤길에 개울을 건너다 미끄러져 빠졌을 때, 허 생원을 직접 등에 업어 구출해준 사람은 누구인가요?", a: ["조 선달", "동이", "충주댁", "뱃사공"], ai: 1 },
+          { q: "소설의 마지막 구절에서 허 생원은 제천 장 대신 동이 어머니가 현재 살고 있는 어느 곳으로 행선지를 변경하나요?", a: ["봉평", "충주", "대화", "제천"], ai: 2 }
+        ]
+      }
+    };
+
+    // 2. 상태 관리 변수
+    let currentNovelId = "sonagi";
+    let activeTab = "character";
+    let currentPlotIndex = 0;
+    let currentQuizIndex = 0;
+    let currentScore = 0;
+
+    // 3. 초기화 실행
+    window.onload = function() {
+      renderNovelSelectors();
+      loadNovel(currentNovelId);
+    };
+
+    // 소설 선택 버튼 렌더링
+    function renderNovelSelectors() {
+      const container = document.getElementById("novel-selector");
+      container.innerHTML = "";
+      
+      Object.values(NOVEL_DATA).forEach(novel => {
+        const btn = document.createElement("button");
+        btn.id = `btn-${novel.id}`;
+        btn.onclick = () => loadNovel(novel.id);
+        
+        // 버튼 내부 디자인
+        btn.className = `w-full text-left p-3.5 rounded-xl border flex justify-between items-center transition-all ${
+          novel.id === currentNovelId 
+            ? "bg-amber-600 border-amber-600 text-white shadow-md font-bold" 
+            : "bg-stone-50 border-stone-200 text-stone-700 hover:bg-stone-100"
+        }`;
+        
+        btn.innerHTML = `
+          <div>
+            <div class="text-xs ${novel.id === currentNovelId ? 'text-amber-100' : 'text-stone-400'}">${novel.author}</div>
+            <div class="serif-font text-lg leading-tight mt-0.5">${novel.title}</div>
+          </div>
+          <i class="fa-solid fa-chevron-right text-xs ${novel.id === currentNovelId ? 'text-white' : 'text-stone-300'}"></i>
+        `;
+        container.appendChild(btn);
+      });
+    }
+
+    // 소설 데이터 불러오기
+    function loadNovel(id) {
+      currentNovelId = id;
+      const novel = NOVEL_DATA[id];
+
+      // 선택 버튼 활성화 스타일 업데이트
+      Object.keys(NOVEL_DATA).forEach(key => {
+        const btn = document.getElementById(`btn-${key}`);
+        if (btn) {
+          if (key === id) {
+            btn.className = "w-full text-left p-3.5 rounded-xl border flex justify-between items-center transition-all bg-amber-600 border-amber-600 text-white shadow-md font-bold";
+            const subText = btn.querySelector("div > div:first-child");
+            if (subText) subText.className = "text-xs text-amber-100";
+            const icon = btn.querySelector("i");
+            if (icon) icon.className = "fa-solid fa-chevron-right text-xs text-white";
+          } else {
+            btn.className = "w-full text-left p-3.5 rounded-xl border flex justify-between items-center transition-all bg-stone-50 border-stone-200 text-stone-700 hover:bg-stone-100";
+            const subText = btn.querySelector("div > div:first-child");
+            if (subText) subText.className = "text-xs text-stone-400";
+            const icon = btn.querySelector("i");
+            if (icon) icon.className = "fa-solid fa-chevron-right text-xs text-stone-300";
+          }
+        }
+      });
+
+      // 좌측 개요 탑재
+      document.getElementById("summary-genre").innerText = novel.genre;
+      document.getElementById("summary-title").innerText = novel.title;
+      document.getElementById("summary-author").innerText = `작가: ${novel.author}`;
+      document.getElementById("summary-theme").innerText = novel.theme;
+      document.getElementById("summary-point").innerText = novel.point;
+
+      const featuresUl = document.getElementById("summary-features");
+      featuresUl.innerHTML = "";
+      novel.features.forEach(feat => {
+        const li = document.createElement("li");
+        li.innerText = feat;
+        featuresUl.appendChild(li);
+      });
+
+      // 우측 콘텐츠 초기화 및 갱신
+      renderCharacters(novel);
+      document.getElementById("conflict-description").innerText = novel.conflict;
+      
+      currentPlotIndex = 0;
+      selectPlotStep(0);
+      document.getElementById("plot-feature-desc").innerHTML = `<i class="fa-solid fa-circle-info text-amber-600 mr-1"></i> ${novel.plotFeature}`;
+
+      renderSettings(novel);
+      
+      // 퀴즈 리셋
+      currentQuizIndex = 0;
+      currentScore = 0;
+      renderQuiz();
+
+      // 인풋 초기화
+      document.getElementById("user-best-scene").value = "";
+      document.getElementById("user-insight").value = "";
+    }
+
+    // 인물 정보 카드 렌더링
+    function renderCharacters(novel) {
+      const container = document.getElementById("characters-container");
+      container.innerHTML = "";
+
+      novel.characters.forEach((char, index) => {
+        const charCard = document.createElement("div");
+        charCard.className = "border border-stone-200 hover:border-amber-400 hover:bg-amber-50/20 transition-all rounded-xl p-4 cursor-pointer flex gap-3";
+        charCard.onclick = () => showCharacterDetailModal(char);
+
+        // 아바타 색상 설정
+        const avatarColor = index === 0 ? "bg-amber-600 text-white" : "bg-stone-700 text-amber-300";
+
+        charCard.innerHTML = `
+          <div class="w-10 h-10 ${avatarColor} rounded-full flex items-center justify-center font-bold text-sm shrink-0">
+            ${char.name.charAt(0)}
+          </div>
+          <div>
+            <div class="flex items-center gap-1.5">
+              <h4 class="font-bold text-stone-900 text-sm serif-font">${char.name}</h4>
+              <span class="bg-stone-100 text-stone-600 text-[10px] px-1.5 py-0.2 rounded">${char.role}</span>
+            </div>
+            <p class="text-xs text-stone-600 mt-1.5 line-clamp-2">${char.desc}</p>
+            <span class="text-[10px] text-amber-700 font-bold mt-2 inline-flex items-center gap-1">자세히 보기 <i class="fa-solid fa-arrow-right text-[8px]"></i></span>
+          </div>
+        `;
+        container.appendChild(charCard);
+      });
+    }
+
+    // 인물 상세 정보 모달 대용 커스텀 경고창 레이아웃 생성
+    function showCharacterDetailModal(char) {
+      const modalOverlay = document.createElement("div");
+      modalOverlay.className = "fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50";
+      modalOverlay.id = "custom-modal";
+
+      modalOverlay.innerHTML = `
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-stone-100 flex flex-col gap-4">
+          <div class="flex justify-between items-start">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 bg-amber-600 text-white rounded-full flex items-center justify-center font-bold text-xs">${char.name.charAt(0)}</div>
+              <div>
+                <h3 class="font-bold text-lg text-stone-900 serif-font">${char.name}</h3>
+                <span class="text-xs text-amber-700 font-semibold">${char.role}</span>
+              </div>
+            </div>
+            <button onclick="closeModal()" class="text-stone-400 hover:text-stone-600 text-xl"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+          <div class="text-sm text-stone-700 leading-relaxed bg-stone-50 p-4 rounded-xl border border-stone-100">
+            ${char.desc}
+          </div>
+          <button onclick="closeModal()" class="w-full bg-stone-900 hover:bg-stone-800 text-white text-xs py-2.5 rounded-lg font-bold transition-colors">닫기</button>
+        </div>
+      `;
+      document.body.appendChild(modalOverlay);
+    }
+
+    function closeModal() {
+      const modal = document.getElementById("custom-modal");
+      if (modal) {
+        modal.remove();
+      }
+    }
+
+    // 사건 흐름 스텝 선택기
+    function selectPlotStep(index) {
+      currentPlotIndex = index;
+      const novel = NOVEL_DATA[currentNovelId];
+      const stepData = novel.plot[index];
+
+      // 네비게이션 버튼 스타일 변경
+      for (let i = 0; i < 5; i++) {
+        const btn = document.getElementById(`plot-nav-${i}`);
+        if (btn) {
+          if (i === index) {
+            btn.className = "py-2 px-1 rounded-lg border bg-amber-600 text-white border-amber-600 font-bold";
+          } else {
+            btn.className = "py-2 px-1 rounded-lg border bg-stone-50 text-stone-600 border-stone-200 hover:bg-stone-100";
+          }
+        }
+      }
+
+      // 상세 뷰 출력
+      document.getElementById("plot-detail-badge").innerText = stepData.step;
+      document.getElementById("plot-detail-title").innerText = stepData.title;
+      document.getElementById("plot-detail-desc").innerText = stepData.desc;
+    }
+
+    // 배경 및 복선 렌더링
+    function renderSettings(novel) {
+      document.getElementById("setting-time-title").innerText = novel.setting.time.title;
+      document.getElementById("setting-time-desc").innerText = novel.setting.time.desc;
+      document.getElementById("setting-space-title").innerText = novel.setting.space.title;
+      document.getElementById("setting-space-desc").innerText = novel.setting.space.desc;
+
+      const fList = document.getElementById("setting-foreshadows-list");
+      fList.innerHTML = "";
+
+      novel.setting.foreshadows.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "py-3 first:pt-0 last:pb-0 flex flex-col gap-1";
+        div.innerHTML = `
+          <div class="flex items-center gap-1.5">
+            <span class="inline-block w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+            <span class="text-sm font-bold text-amber-200 serif-font">${item.item}</span>
+          </div>
+          <p class="text-xs text-stone-300 pl-3 leading-relaxed">${item.desc}</p>
+        `;
+        fList.appendChild(div);
+      });
+    }
+
+    // 독서 퀴즈 제어 (퀴즈 리스트 및 만점 상태 연동형 수정)
+    function renderQuiz() {
+      const quizBox = document.getElementById("quiz-box");
+      const progressText = document.getElementById("quiz-progress-text");
+      const scoreText = document.getElementById("quiz-score-text");
+      
+      const novel = NOVEL_DATA[currentNovelId];
+      const quizList = novel.quizzes;
+
+      progressText.innerText = `문제 ${Math.min(currentQuizIndex + 1, quizList.length)} / ${quizList.length}`;
+      scoreText.innerText = `점수: ${currentScore}점`;
+
+      if (currentQuizIndex >= quizList.length) {
+        // 모든 퀴즈 완료
+        quizBox.innerHTML = `
+          <div class="text-center py-6 space-y-4">
+            <div class="text-4xl text-amber-500"><i class="fa-solid fa-trophy animate-bounce"></i></div>
+            <h4 class="font-bold text-lg text-stone-900 serif-font">퀴즈를 모두 마쳤습니다!</h4>
+            <p class="text-sm text-stone-600">최종 획득 점수: <span class="font-bold text-amber-600">${currentScore}점</span> (만점: ${quizList.length * 10}점)</p>
+            <button onclick="resetQuiz()" class="bg-stone-900 hover:bg-stone-800 text-white font-bold py-2 px-5 rounded-lg text-xs transition-all">
+              <i class="fa-solid fa-rotate-right mr-1"></i> 다시 풀기
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      const qData = quizList[currentQuizIndex];
+
+      quizBox.innerHTML = `
+        <div class="space-y-4">
+          <div class="bg-white border border-stone-200 p-4 rounded-xl shadow-xs">
+            <span class="text-[10px] font-bold text-stone-400 block mb-1">QUESTION ${String(currentQuizIndex + 1).padStart(2, '0')}</span>
+            <p class="font-bold text-stone-900 text-sm leading-relaxed">${qData.q}</p>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+            ${qData.a.map((answer, index) => `
+              <button onclick="checkAnswer(${index})" class="text-left bg-white border border-stone-200 hover:border-amber-500 hover:bg-amber-50/20 py-2.5 px-4 rounded-xl text-xs text-stone-800 font-semibold transition-all">
+                ${index + 1}. ${answer}
+              </button>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function checkAnswer(selectedIndex) {
+      const novel = NOVEL_DATA[currentNovelId];
+      const qData = novel.quizzes[currentQuizIndex];
+      const correct = qData.ai;
+
+      const isCorrect = selectedIndex === correct;
+      if (isCorrect) {
+        currentScore += 10;
+      }
+
+      // 정답 결과 팝업 피드백 모달
+      const feedbackModal = document.createElement("div");
+      feedbackModal.className = "fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in";
+      feedbackModal.innerHTML = `
+        <div class="bg-white rounded-2xl max-w-xs w-full p-6 text-center shadow-lg flex flex-col gap-4 items-center">
+          <div class="text-4xl ${isCorrect ? 'text-green-500' : 'text-red-500'}">
+            <i class="fa-solid ${isCorrect ? 'fa-circle-check' : 'fa-circle-xmark'}"></i>
+          </div>
+          <div>
+            <h4 class="font-bold text-base text-stone-950">${isCorrect ? '정답입니다!' : '아쉽게 틀렸습니다'}</h4>
+            <p class="text-xs text-stone-500 mt-1">정답: ${qData.a[correct]}</p>
+          </div>
+          <button id="next-quiz-btn" class="w-full bg-stone-900 hover:bg-stone-800 text-white font-bold py-2 rounded-lg text-xs transition-colors">다음 문제</button>
+        </div>
+      `;
+      document.body.appendChild(feedbackModal);
+
+      document.getElementById("next-quiz-btn").onclick = function() {
+        feedbackModal.remove();
+        currentQuizIndex++;
+        renderQuiz();
+      };
+    }
+
+    function resetQuiz() {
+      currentQuizIndex = 0;
+      currentScore = 0;
+      renderQuiz();
+    }
+
+    // 탭 전환 기능
+    function switchTab(tabName) {
+      activeTab = tabName;
+
+      // 모든 탭 컨텐츠 숨기기
+      const tabPanes = document.querySelectorAll(".tab-pane");
+      tabPanes.forEach(pane => pane.classList.add("hidden"));
+
+      // 모든 탭 버튼 비활성화
+      const tabBtns = document.querySelectorAll(".tab-btn");
+      tabBtns.forEach(btn => {
+        btn.className = "tab-btn flex-1 py-2.5 px-3 rounded-lg text-center transition-all flex items-center justify-center gap-2 text-stone-600 hover:text-stone-900";
+      });
+
+      // 선택 탭 콘텐츠 및 버튼 활성화
+      document.getElementById(`tab-content-${tabName}`).classList.remove("hidden");
+      document.getElementById(`tab-btn-${tabName}`).className = "tab-btn flex-1 py-2.5 px-3 rounded-lg text-center transition-all flex items-center justify-center gap-2 bg-white text-stone-900 shadow-sm font-bold";
+    }
+
+    // 리포트 클립보드 복사 유틸리티
+    function exportPortfolio() {
+      const bestScene = document.getElementById("user-best-scene").value.trim();
+      const insight = document.getElementById("user-insight").value.trim();
+      const novel = NOVEL_DATA[currentNovelId];
+
+      const reportText = `[나만의 국어 소설 분석 리포트]\n\n` +
+                         `■ 분석 대상 소설: ${novel.title} (${novel.author})\n` +
+                         `■ 소설 주제: ${novel.theme}\n` +
+                         `■ 기억에 남는 장면/인물: ${bestScene || "기재하지 않음"}\n` +
+                         `■ 깨달은 삶의 가치: ${insight || "기재하지 않음"}\n\n` +
+                         `작성일자: 2026년 5월 27일 / 분석기 제작 국어 교실`;
+
+      // 클립보드에 쓰기 (Fallback 고려)
+      const tempTextArea = document.createElement("textarea");
+      tempTextArea.value = reportText;
+      document.body.appendChild(tempTextArea);
+      tempTextArea.select();
+      document.execCommand("copy");
+      document.body.removeChild(tempTextArea);
+
+      // 토스트 메시지 띄우기
+      const toast = document.getElementById("saved-toast-msg");
+      toast.classList.remove("opacity-0");
+      toast.classList.add("opacity-100");
+      
+      setTimeout(() => {
+        toast.classList.remove("opacity-100");
+        toast.classList.add("opacity-0");
+      }, 3000);
+    }
+  </script>
+</body>
+</html>
